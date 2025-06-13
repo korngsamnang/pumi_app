@@ -1,0 +1,45 @@
+services:
+    traefik:
+        image: traefik:v3.3
+        container_name: traefik
+        restart: unless-stopped
+        ports:
+            - "80:80"
+            - "443:443"
+        volumes:
+            - "/var/run/docker.sock:/var/run/docker.sock:ro"
+            - "letsencrypt:/letsencrypt"
+        command:
+            - "--api.dashboard=false"
+            - "--providers.docker=true"
+            - "--providers.docker.exposedbydefault=false"
+            - "--entrypoints.web.address=:80"
+            - "--entrypoints.websecure.address=:443"
+            - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+            - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+            - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
+            - "--certificatesresolvers.letsencrypt.acme.email=${LETSENCRYPT_EMAIL}"
+            - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+            - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+        networks:
+            - webnet
+
+    pumi-api:
+        build: ./
+        container_name: pumi-api
+        restart: unless-stopped
+        labels:
+            - "traefik.enable=true"
+            - "traefik.http.routers.pumi-api.rule=Host(`${PUMI_API_HOST}`)"
+            - "traefik.http.services.pumi-api.loadbalancer.server.port=3000"
+            - "traefik.http.routers.pumi-api.entrypoints=websecure"
+            - "traefik.http.routers.pumi-api.tls.certresolver=letsencrypt"
+        networks:
+            - webnet
+
+networks:
+    webnet:
+        driver: bridge
+
+volumes:
+    letsencrypt:
