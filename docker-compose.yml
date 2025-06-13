@@ -29,10 +29,12 @@ services:
         container_name: pumi-api
         restart: unless-stopped
         environment:
-            - APPLICATION_HOSTS=${PUMI_API_HOST}
+            - RAILS_ENV=production
+            - SECRET_KEY_BASE=any-random-string-here-123
+            - APPLICATION_HOST=${APPLICATION_HOST}
         labels:
             - "traefik.enable=true"
-            - "traefik.http.routers.pumi-api.rule=Host(`${PUMI_API_HOST}`)"
+            - "traefik.http.routers.pumi-api.rule=Host(`${APPLICATION_HOST}`)"
             - "traefik.http.services.pumi-api.loadbalancer.server.port=3000"
             - "traefik.http.routers.pumi-api.entrypoints=websecure"
             - "traefik.http.routers.pumi-api.tls.certresolver=letsencrypt"
