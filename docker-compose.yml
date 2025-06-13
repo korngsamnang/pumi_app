@@ -28,6 +28,8 @@ services:
         build: ./
         container_name: pumi-api
         restart: unless-stopped
+        environment:
+            - APPLICATION_HOSTS=${PUMI_API_HOST}
         labels:
             - "traefik.enable=true"
             - "traefik.http.routers.pumi-api.rule=Host(`${PUMI_API_HOST}`)"
