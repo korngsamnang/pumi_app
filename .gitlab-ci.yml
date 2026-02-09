@@ -1,0 +1,25 @@
+workflow:
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+    - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH"
+    - when: never
+
+stages:
+  - build
+  - trigger
+
+include:
+  - project: skills-development-fund/cicd/ci-templates
+    ref: main
+    file:
+      - docker-build.yml
+      - trigger-deploy.yml
+
+build_and_push_image:
+  extends: .docker-build-and-push
+
+trigger_deploy_pipeline:
+  extends: .trigger-deploy
+  variables:
+    IMAGE_NAME_VAR: IMAGE_NAME_APP27
+    IMAGE_TAG_VAR: IMAGE_TAG_APP27
